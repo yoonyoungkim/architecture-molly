@@ -1,0 +1,35 @@
+version: '3'
+services:
+  mongo:
+    container_name: molly-mongo
+    image: mongo:4.2-bionic
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=sally-2021
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro 
+    ports:
+      - "27017:27017"
+    networks:
+      - local_sally
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 1s
+      timeout: 3s
+      retries: 3
+
+  # RabbitMQ
+  rabbitmq:
+      container_name: rabbitmq_service
+      image: rabbitmq:3.7.14-management-alpine # 웹 UI management 툴 포함
+      # 환경변수 설정
+      environment:
+        - RABBITMQ_USER=guest
+        - RABBITMQ_PASSWORD=guest
+      ports:
+        - "5672:5672" # rabbitMQ default port
+        - "15672:15672" # UI를 위한 port
+networks:
+  local_sally:
